@@ -14,12 +14,14 @@ struct cpu {
 
   // flag register
   unsigned char FL;
+
+  unsigned char SP;
 };
 
 // ALU operations
 enum alu_op {
-	ALU_MUL
-	// Add more here
+	ALU_MUL,
+	ALU_ADD
 };
 
 // Instructions
@@ -34,6 +36,9 @@ enum alu_op {
 
 #define HLT  0b00000001
 #define MUL  0b10100010
+#define POP  0b01000110
+#define PUSH 0b01000101
+#define ADD  0b10100000
 
 // Function declarations
 

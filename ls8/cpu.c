@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #define DATA_LEN 6
+#define SP 7
 
 unsigned char cpu_ram_read(struct cpu *cpu, unsigned char address) {
   return cpu->ram[address];
@@ -11,6 +12,18 @@ unsigned char cpu_ram_read(struct cpu *cpu, unsigned char address) {
 
 unsigned char cpu_ram_write(struct cpu *cpu, unsigned char address, unsigned char value) {
   return cpu->ram[address] = value;
+}
+
+unsigned char pop(struct cpu *cpu) {
+  unsigned char value = cpu->ram[cpu->registers[SP]];
+
+  cpu->registers[SP]++;
+  return value;
+}
+
+void push(struct cpu *cpu, unsigned char value) {
+  cpu->registers[SP]--;
+  cpu_ram_write(cpu, cpu->registers[SP], value);
 }
 
 /**
@@ -39,7 +52,6 @@ void cpu_load(struct cpu *cpu, int argc, char *argv[]) {
     unsigned char value = strtoul(line, &endptr, 2);
 
     if (line == endptr) {
-      // printf("SKIPPING: %s", line);
       continue;
     }
 
@@ -59,7 +71,9 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       cpu->registers[regA] *= cpu->registers[regB];
       break;
 
-    // TODO: implement more ALU ops
+    case ALU_ADD:
+      cpu->registers[regA] += cpu->registers[regB];
+      break;
   }
 }
 
@@ -98,6 +112,18 @@ void cpu_run(struct cpu *cpu) {
 
       case MUL:
         alu(cpu, ALU_MUL, operandA, operandB);
+        break;
+
+      case POP:
+        cpu->registers[operandA] = pop(cpu);
+        break;
+
+      case PUSH:
+        push(cpu, cpu->registers[operandA]);
+        break;
+
+      case ADD:
+        alu(cpu, ALU_ADD, operandA, operandB);
         break;
       
       default:
