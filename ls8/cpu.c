@@ -91,8 +91,8 @@ void cpu_run(struct cpu *cpu) {
     unsigned int operands = (IR >> 6) + 1;
 
     // 3. Get the appropriate value(s) of the operands following this instruction
-    unsigned char operandA = cpu_ram_read(cpu, cpu->PC + 1);
-    unsigned char operandB = cpu_ram_read(cpu, cpu->PC + 2);
+    unsigned char operandA = cpu_ram_read(cpu, (cpu->PC + 1) & 0xFF);
+    unsigned char operandB = cpu_ram_read(cpu, (cpu->PC + 2) & 0xFF);
 
     // 4. switch() over it to decide on a course of action.
     switch (IR) {
@@ -124,6 +124,17 @@ void cpu_run(struct cpu *cpu) {
 
       case ADD:
         alu(cpu, ALU_ADD, operandA, operandB);
+        break;
+
+      case CALL:
+        push(cpu, cpu->PC + 2);
+        cpu->PC = cpu->registers[operandA];
+        operands = 0;
+        break;
+
+      case RET:
+        cpu->PC = pop(cpu);
+        operands = 0;
         break;
       
       default:
